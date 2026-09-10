@@ -12,7 +12,7 @@
 6. Continue the exact next action in STATE. Verify implemented work before changing it. Never recreate completed sections, assets or research, or replace working code for stylistic preference.
 7. Update STATE after meaningful milestones and before long builds/browser checks. Include exact next action, HEAD, graph freshness, tests, issues, commit and push status.
 8. Update DECISIONS only for durable design/architecture choices. Update KNOWLEDGE only for public portfolio facts and their relationships. Temporary bugs belong in STATE.
-9. Keep Graphify synchronized at substantial milestones and after pulls/merges/branch switches. Check `graphify hook status`; install hooks only if absent. New clones must install local hooks.
+9. Keep Graphify synchronized at substantial milestones and after pulls/merges/branch switches. Check `graphify hook status`; install hooks only if absent. New clones must install local hooks. If the environment ends a detached hook before it finishes, run `PYTHONHASHSEED=0 GRAPHIFY_MAX_WORKERS=2 graphify update .` in the foreground and verify completion.
 10. Use the actual package scripts. `npm run verify` runs typecheck, lint, tests, build and production HTTP checks. Do not rerun completed expensive QA without a concrete remaining risk.
 11. Before final commit, review the diff and graph for private information, accidental generated files and secrets. Persist graph.json, GRAPH_REPORT.md and graph.html; ignore local caches/costs. Do not force-push or rewrite history.
 12. Verify the remote commit and local/remote alignment. If the post-commit graph produces useful changes, inspect and make one minimal follow-up commit, not an endless update/commit loop.
