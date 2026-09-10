@@ -5,7 +5,6 @@ import assert from "node:assert/strict";
 import { Miniflare, Log, LogLevel } from "miniflare";
 import { projects } from "../data/projects.ts";
 import { labNotes } from "../data/notes.ts";
-import { site } from "../data/site.ts";
 
 const configPath = path.resolve("dist/server/wrangler.json");
 const config = JSON.parse(await readFile(configPath, "utf8"));
@@ -33,7 +32,11 @@ const runtime = new Miniflare({
   log: new Log(LogLevel.ERROR),
 });
 
-const origin = site.origin;
+const siteSource = await readFile(path.resolve("data/site.ts"), "utf8");
+const originMatch = siteSource.match(/origin:\s*"([^"]+)"/);
+assert.ok(originMatch, "data/site.ts must define site.origin");
+const origin = originMatch[1];
+
 const routes = [
   "/",
   "/projects",
