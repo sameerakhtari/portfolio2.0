@@ -1,0 +1,8 @@
+# Optimized raster artwork and QA screenshots are not architecture source.
+public/images/*.webp
+public/og.png
+docs/screenshots/
+# Generated dependency inventory; actual package.json remains indexed.
+package-lock.json
+# Graphify's own output must not become recursive input.
+graphify-out/
