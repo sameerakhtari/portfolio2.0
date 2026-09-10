@@ -6,3 +6,22 @@ docs/screenshots/
 package-lock.json
 # Graphify's own output must not become recursive input.
 graphify-out/
+# Never index private execution state, including state accidentally copied here.
+.agent/
+.agent-private/
+.agents/
+.codex/
+.sites-runtime/
+work/
+outputs/
+.env*
+*private-handoff*
+*private-backup*
+STATE.md
+JOURNAL.md
+TASKS.yaml
+SECURITY_FINDINGS.md
+MEMORY_GRAPH.yaml
+TEST_MATRIX.md
+PRIVATE_KNOWLEDGE.yaml
+SESSION_MANIFEST.yaml

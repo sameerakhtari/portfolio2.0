@@ -46,15 +46,21 @@ next-env.d.ts
 /outputs/
 /work/
 
-# Durable graph outputs are retained; local bookkeeping is not.
-/graphify-out/cost.json
-/graphify-out/cache/
-/graphify-out/.graphify_python
-/graphify-out/.graphify_root
-/graphify-out/.graphify_analysis.json
-/graphify-out/.graphify_labels.json
-/graphify-out/.graphify_labels.json.sig
-/graphify-out/.rebuild.lock
-/graphify-out/.update.lock
-# Date-stamped local snapshots created by Graphify updates.
-/graphify-out/20??-??-??/
+# Private execution state and code-discovery output
+/.agent/*
+!/.agent/INSTRUCTIONS.md
+!/.agent/DECISIONS.md
+/.agent-private/
+/graphify-out/
+*private-handoff*
+*private-backup*
+*.bundle
+*.bundle.sha256
+STATE.md
+JOURNAL.md
+TASKS.yaml
+SECURITY_FINDINGS.md
+MEMORY_GRAPH.yaml
+TEST_MATRIX.md
+PRIVATE_KNOWLEDGE.yaml
+SESSION_MANIFEST.yaml

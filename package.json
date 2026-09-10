@@ -15,8 +15,9 @@
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:production": "node --experimental-strip-types scripts/check-production.mjs",
-    "verify": "npm run typecheck && npm run lint && npm test && npm run build && npm run test:production",
-    "deploy": "wrangler deploy --config dist/server/wrangler.json"
+    "verify": "npm run check:public && npm run typecheck && npm run lint && npm test && npm run build && npm run test:production",
+    "deploy": "wrangler deploy --config dist/server/wrangler.json",
+    "check:public": "node scripts/check-public-files.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

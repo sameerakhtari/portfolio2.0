@@ -73,7 +73,7 @@ The required Sites starter build integration and vendor licenses are retained. D
 
 Scrolling is native, with damped progress and short desktop sticky chapters. Mobile uses normal document flow. Observers suspend inactive rendering, pixel ratio is capped, and geometry, materials, listeners and animation frames are disposed on unmount. System reduced-motion preference and the persistent Motion switch present complete static content. Keyboard and tap controls expose diagram explanations without requiring hover.
 
-See [the storyboard](docs/storyboard.md) for the scene-by-scene design and [verification notes](docs/verification.md) for the delivery checks and limitations.
+See [the storyboard](docs/storyboard.md) for the scene-by-scene design and [testing guide](docs/testing.md) for verification instructions.
 
 ## Edit content
 
@@ -117,21 +117,12 @@ Review the generated Worker name and account before deploying. Set the domain th
 
 Only source, the lockfile and optimized assets belong in Git. Dependencies, build output, local credentials, preview state, uploaded briefs and working reference images are ignored. No build artifacts are uploaded by a repository workflow.
 
-## Resume without rebuilding context
+## Working with a coding agent
 
-Start with [execution state](.agent/STATE.md), [resume instructions](.agent/INSTRUCTIONS.md), [durable decisions](.agent/DECISIONS.md), and relevant facts in [KNOWLEDGE.yaml](.agent/KNOWLEDGE.yaml). Actual code and Git override these notes.
+Read [.agent/INSTRUCTIONS.md](.agent/INSTRUCTIONS.md) and the public design
+decisions. Use a private handoff supplied by the project owner for execution
+progress. Reconstruct missing state from actual Git and source.
 
-The repository includes a [Graphify](https://github.com/Graphify-Labs/graphify) code index: `graphify-out/graph.json`, `GRAPH_REPORT.md`, `graph.html`, and a portable extraction manifest. The official package is `graphifyy`; this delivery used 0.9.56.
-
-```bash
-uv tool install graphifyy==0.9.56  # only if no working installation exists
-graphify hook status
-graphify hook install           # once per clone if missing
-graphify query "pigment engine" --budget 1200
-graphify explain "LabExplorer"
-graphify path "app/page.tsx" "HardwareScene()"
-```
-
-If the executable is not on PATH, use the directory printed by `uv tool dir --bin`. Existing queries are local and require no model API. This index maps code; CSS and curated factual documents are read separately after the graph identifies the relevant components.
-
-Use `graphify update .` after source changes or a pull/merge. Git hooks refresh the code graph after commits and branch changes. Only if the graph is missing, use this version's CLI build: `graphify extract . --code-only --max-workers 2`, then `graphify cluster-only . --no-label` for the report and HTML. The assistant command `/graphify .` is a separate interface. Local Python paths, cache, cost data and tool state are ignored.
+Execution logs, security findings, private memory and Graphify output stay outside
+the public repository. The public file check runs with `npm run verify`; see the
+[testing guide](docs/testing.md) to enable the staged-file Git hook.
