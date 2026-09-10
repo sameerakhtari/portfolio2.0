@@ -38,7 +38,7 @@ export const experience = [
   },
   {
     year: "2023",
-    company: "Beyond360",
+    company: "A Startup Company",
     role: "Internee Engineer",
     period: "September — December 2023 · Karachi",
     scope:
