@@ -3,7 +3,7 @@ import { profile } from "./profile";
 // Set the canonical origin to the domain used by your deployment.
 // This public value is configuration, never a credential.
 export const site = {
-  origin: "https://sameerakhtari.com",
+  origin: "https://portfolio.sameerakhtari.com",
   title: `${profile.name} — Software & Systems Engineer`,
   description: `${profile.role} at ${profile.company}. Software, Linux, cloud infrastructure, networking, Kubernetes and the personal systems that connect them.`,
   socialImage: "/og.png",

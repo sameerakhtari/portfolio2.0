@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { Miniflare, Log, LogLevel } from "miniflare";
 import { projects } from "../data/projects.ts";
 import { labNotes } from "../data/notes.ts";
+import { site } from "../data/site.ts";
 
 const configPath = path.resolve("dist/server/wrangler.json");
 const config = JSON.parse(await readFile(configPath, "utf8"));
@@ -32,6 +33,7 @@ const runtime = new Miniflare({
   log: new Log(LogLevel.ERROR),
 });
 
+const origin = site.origin;
 const routes = [
   "/",
   "/projects",
@@ -45,17 +47,14 @@ const routes = [
 const assets = new Set(["/favicon.svg", "/og.png", "/images/muet.webp"]);
 try {
   for (const route of routes) {
-    const response = await runtime.dispatchFetch(
-      `https://sameerakhtari.com${route}`,
-    );
+    const response = await runtime.dispatchFetch(`${origin}${route}`);
     assert.equal(response.status, 200, `${route} should load directly`);
     const html = await response.text();
     assert.match(html, /<h1[ >]/, `${route} needs a server-rendered heading`);
     assert.match(html, /<title>[^<]+<\/title>/, `${route} needs a title`);
     assert.ok(
-      html.includes(
-        `href="https://sameerakhtari.com${route === "/" ? "" : route}"`,
-      ) || html.includes(`href="https://sameerakhtari.com${route}"`),
+      html.includes(`href="${origin}${route === "/" ? "" : route}"`) ||
+        html.includes(`href="${origin}${route}"`),
       `${route} canonical URL`,
     );
     assert.match(html, /name="description" content="[^"]+"/);
@@ -76,29 +75,21 @@ try {
     "/dev/pigment",
     "/dev/review",
   ]) {
-    const response = await runtime.dispatchFetch(
-      `https://sameerakhtari.com${route}`,
-    );
+    const response = await runtime.dispatchFetch(`${origin}${route}`);
     assert.equal(response.status, 404, `${route} should be a real 404`);
     await response.arrayBuffer();
     console.log(`PASS ${route} → 404`);
   }
-  const sitemapResponse = await runtime.dispatchFetch(
-    "https://sameerakhtari.com/sitemap.xml",
-  );
+  const sitemapResponse = await runtime.dispatchFetch(`${origin}/sitemap.xml`);
   assert.equal(sitemapResponse.status, 200);
   const sitemap = await sitemapResponse.text();
   assert.equal([...sitemap.matchAll(/<loc>/g)].length, routes.length);
   assert.ok(!sitemap.includes("/dev/"));
-  const robotsResponse = await runtime.dispatchFetch(
-    "https://sameerakhtari.com/robots.txt",
-  );
+  const robotsResponse = await runtime.dispatchFetch(`${origin}/robots.txt`);
   assert.equal(robotsResponse.status, 200);
   assert.match(await robotsResponse.text(), /Disallow: \/dev\//);
   for (const asset of assets) {
-    const response = await runtime.dispatchFetch(
-      `https://sameerakhtari.com${asset}`,
-    );
+    const response = await runtime.dispatchFetch(`${origin}${asset}`);
     assert.equal(response.status, 200, `${asset} must resolve`);
     assert.ok((await response.arrayBuffer()).byteLength > 0);
   }
