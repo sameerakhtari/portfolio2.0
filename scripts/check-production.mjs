@@ -90,6 +90,15 @@ try {
   assert.match(robots, /Disallow: \/dev\//i);
   assert.ok(robots.includes(`Sitemap: ${origin}/sitemap.xml`));
   assert.equal(robotsResponse.headers.get("Cache-Control"), "no-store");
+  const securityResponse = await runtime.dispatchFetch(
+    `${origin}/.well-known/security.txt`,
+  );
+  assert.equal(securityResponse.status, 200);
+  const security = await securityResponse.text();
+  assert.match(security, /^Contact: mailto:mail@sameerakhtari\.com$/m);
+  assert.match(security, /^Expires: 2030-09-12T00:00:00Z$/m);
+  assert.match(security, /^Preferred-Languages: en$/m);
+  assert.match(security, /does not grant authorization to perform security testing/i);
   for (const method of ["POST", "PUT", "DELETE"]) {
     const response = await runtime.dispatchFetch(origin, { method });
     assert.equal(response.status, 405, `${method} should be unavailable`);
@@ -143,7 +152,9 @@ try {
     assert.equal(response.headers.get("X-Content-Type-Options"), "nosniff");
     assert.ok((await response.arrayBuffer()).byteLength > 0);
   }
-  console.log(`PASS sitemap, robots and ${assets.size} referenced assets`);
+  console.log(
+    `PASS sitemap, robots, security.txt and ${assets.size} referenced assets`,
+  );
   console.log(
     `Production verification complete: ${routes.length} pages, security headers, methods, and unavailable-route checks.`,
   );
