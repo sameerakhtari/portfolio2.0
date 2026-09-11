@@ -91,7 +91,7 @@ export function SystemDiagram({
     return () => cancelAnimationFrame(frame);
   }, [playing, reduced]);
   return (
-    <div className={`system-diagram diagram-${variant}`}>
+    <div className={`system-diagram diagram-${variant}`} data-scene-focus>
       <div className="diagram-toolbar">
         <span>
           {variant === "production"

@@ -4,6 +4,10 @@ Run `npm run verify` before publishing. It checks the public file policy,
 TypeScript, lint, behavioral tests, the production build, and HTTP responses
 from the built Worker.
 
+After building, `npm run review:production` serves that same Worker locally for
+browser checks with its response policy active. The ordinary `npm run dev`
+retains live editing and the development review tools.
+
 Use a browser to check navigation, focus, responsive layouts, scrolling in both
 directions, reduced motion, and graphics fallbacks. Test the deployed version
 after publishing; a successful local build does not establish production state.

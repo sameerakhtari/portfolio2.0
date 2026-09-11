@@ -3,16 +3,26 @@
 import {
   createContext,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from "react";
 import { useMotion } from "./MotionProvider";
-import { clamp } from "@/lib/pigment";
+import {
+  pinGeometry,
+  scenePhase,
+  scrubProgress,
+  type ScenePhase,
+} from "@/lib/scene-scroll";
+import { subscribeScroll } from "@/lib/scroll-observer";
 
-const SceneContext = createContext({ progress: 1, active: true });
+const SceneContext = createContext({
+  progress: 1,
+  active: true,
+  phase: "after" as ScenePhase,
+});
 export const useScene = () => useContext(SceneContext);
 
 export function Chapter({
@@ -29,32 +39,62 @@ export function Chapter({
   sticky?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
-  const [state, setState] = useState({ progress: 0, active: false });
+  const pin = useRef<HTMLDivElement>(null);
+  const [state, setState] = useState({
+    progress: 0,
+    active: false,
+    phase: "before" as ScenePhase,
+  });
   const { reduced } = useMotion();
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = ref.current;
     if (!element) return;
-    let frame = 0,
-      active = false,
-      value = 0,
-      target = 0;
+    const panel = pin.current;
+    let active = false;
+    let geometry = { top: 0, budget: 0 };
     const update = () => {
-      const rect = element.getBoundingClientRect();
-      target =
-        id === "init"
-          ? clamp(-rect.top / (rect.height * 0.72))
-          : clamp((innerHeight * 0.78 - rect.top) / (rect.height * 0.72));
-      if (reduced) target = 1;
-      if (!frame) frame = requestAnimationFrame(tick);
+      const progress =
+        reduced || !sticky
+          ? 1
+          : scrubProgress(
+              element.getBoundingClientRect().top,
+              geometry.top,
+              geometry.budget,
+            );
+      const phase = scenePhase(progress);
+      element.style.setProperty("--scene-progress", String(progress));
+      element.dataset.sceneProgress = progress.toFixed(5);
+      element.dataset.scenePhase = phase;
+      setState((previous) =>
+        previous.progress === progress && previous.active === active
+          ? previous
+          : { progress, active, phase },
+      );
     };
-    const tick = () => {
-      frame = 0;
-      const diff = target - value;
-      value = Math.abs(diff) < 0.002 ? target : value + diff * 0.12;
-      setState({ progress: value, active });
-      element.style.setProperty("--scene-progress", String(value));
-      if (active && Math.abs(target - value) > 0.002)
-        frame = requestAnimationFrame(tick);
+    const measure = () => {
+      if (panel && sticky && !reduced) {
+        const focal =
+          panel.querySelector<HTMLElement>("[data-scene-focus]") ?? panel;
+        const panelRect = panel.getBoundingClientRect();
+        const focalRect = focal.getBoundingClientRect();
+        const header =
+          document.querySelector<HTMLElement>(".site-header")?.offsetHeight ??
+          0;
+        geometry = pinGeometry(
+          innerHeight,
+          header,
+          focalRect.top - panelRect.top + focalRect.height / 2,
+          innerWidth < 768,
+          element.getBoundingClientRect().top + window.scrollY,
+        );
+        element.style.setProperty("--pin-top", `${geometry.top}px`);
+        element.style.setProperty("--pin-height", `${panelRect.height}px`);
+        element.style.setProperty("--scroll-budget", `${geometry.budget}px`);
+        element.dataset.pinReady = "true";
+      } else {
+        delete element.dataset.pinReady;
+      }
+      update();
     };
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -64,22 +104,29 @@ export function Chapter({
       { rootMargin: "100px" },
     );
     observer.observe(element);
-    const onScroll = () => {
+    const unsubscribe = subscribeScroll(() => {
       if (active) update();
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", update);
-    update();
+    });
+    const resize = new ResizeObserver(measure);
+    if (panel) resize.observe(panel);
+    const focal = panel?.querySelector("[data-scene-focus]");
+    if (focal) resize.observe(focal);
+    window.addEventListener("resize", measure);
+    measure();
     return () => {
       observer.disconnect();
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", update);
+      resize.disconnect();
+      unsubscribe();
+      window.removeEventListener("resize", measure);
     };
-  }, [id, reduced]);
+  }, [id, reduced, sticky]);
   return (
     <SceneContext.Provider
-      value={{ progress: reduced ? 1 : state.progress, active: state.active }}
+      value={{
+        ...state,
+        progress: reduced ? 1 : state.progress,
+        phase: reduced ? "after" : state.phase,
+      }}
     >
       <section
         ref={ref}
@@ -87,7 +134,13 @@ export function Chapter({
         className={`chapter ${sticky ? "chapter-sticky" : ""} ${className}`}
         style={{ "--chapter-color": color } as CSSProperties}
       >
-        {sticky ? <div className="chapter-pin">{children}</div> : children}
+        {sticky ? (
+          <div ref={pin} className="chapter-pin">
+            {children}
+          </div>
+        ) : (
+          children
+        )}
       </section>
     </SceneContext.Provider>
   );

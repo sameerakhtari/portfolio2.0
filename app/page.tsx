@@ -62,7 +62,7 @@ export default function Home() {
             }),
           }}
         />
-        <Chapter id="init" className="hero">
+        <Chapter id="init" className="hero" sticky>
           <div className="hero-topline">
             <IndexLabel index="00">SYSTEM INITIALIZING</IndexLabel>
             <span className="hero-edition">ENGINEERING JOURNAL / VOL. 02</span>
@@ -175,7 +175,7 @@ export default function Home() {
           </div>
         </Chapter>
         <Bridge label="FROM SOFTWARE TO THE SYSTEM UNDERNEATH" />
-        <Chapter id="practice" className="practice">
+        <Chapter id="practice" className="practice" sticky>
           <div className="chapter-inner">
             <IndexLabel index="02">PROFESSIONAL PRACTICE</IndexLabel>
             <div className="split-heading">
@@ -262,7 +262,7 @@ export default function Home() {
           </div>
         </Chapter>
         <Bridge label="WHEN CONNECTIONS BECOME A WORKFLOW" />
-        <Chapter id="automation" className="automation" color="#ad6c14">
+        <Chapter id="automation" className="automation" color="#ad6c14" sticky>
           <div className="chapter-inner">
             <IndexLabel index="05">
               AUTOMATION / CONSTRAINT → ITERATION

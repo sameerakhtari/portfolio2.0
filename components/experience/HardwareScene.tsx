@@ -87,6 +87,7 @@ export function HardwareScene({
   return (
     <div
       className={`hardware-scene hardware-${kind}`}
+      data-scene-focus
       role="img"
       aria-label={
         kind === "lab"

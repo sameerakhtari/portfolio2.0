@@ -257,12 +257,22 @@ img {
 .chapter h3 {
   font-weight: 500;
 }
-.chapter-sticky {
-  min-height: 142vh;
+.chapter-sticky { min-height: 0; }
+.chapter-pin { position: relative; }
+.chapter-sticky[data-pin-ready="true"] {
+  height: calc(var(--pin-height) + var(--scroll-budget));
 }
-.chapter-pin {
+.chapter-sticky[data-pin-ready="true"] > .chapter-pin {
   position: sticky;
-  top: 20px;
+  top: var(--pin-top);
+}
+.hero.chapter-sticky { padding: 0; display: block; }
+.hero.chapter-sticky > .chapter-pin {
+  padding: 38px 7.5vw 0;
+  min-height: calc(100svh - 86px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .index-label {
   display: flex;
@@ -543,7 +553,10 @@ img {
 }
 .journey-rail a {
   position: relative;
-  display: block;
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  min-height: 24px;
   padding: 4px;
 }
 .rail-dot {
@@ -2028,9 +2041,11 @@ img {
 /* Less motion is a composed state, not a broken animation. */
 [data-motion="reduced"] .chapter-sticky {
   min-height: 0;
+  height: auto;
 }
-[data-motion="reduced"] .chapter-pin {
-  position: static;
+[data-motion="reduced"] .chapter-sticky > .chapter-pin {
+  position: relative;
+  top: auto;
 }
 [data-motion="reduced"] * {
   scroll-behavior: auto !important;
@@ -2207,6 +2222,9 @@ img {
     background: var(--paper);
     border-bottom: 1px solid var(--ink);
     padding: 20px 6vw;
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
   }
@@ -2218,10 +2236,12 @@ img {
   .journey-rail {
     display: none;
   }
-  .hero {
+  .hero,
+  .hero.chapter-sticky > .chapter-pin {
     padding: 28px 6vw 0;
     min-height: auto;
   }
+  .hero.chapter-sticky { padding: 0; }
   .hero-edition {
     display: none;
   }
@@ -2330,9 +2350,7 @@ img {
   .chapter-sticky {
     min-height: 0;
   }
-  .chapter-pin {
-    position: static;
-  }
+  .chapter-pin { position: relative; }
   .index-label {
     font-size: 12px;
     gap: 9px;

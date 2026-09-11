@@ -14,7 +14,7 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const managedLinux = readExecutionProfile() === "managed-linux";
 
 const localBindingConfig = {
-  main: "vinext/server/fetch-handler",
+  main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
   d1_databases: d1
     ? [
@@ -35,7 +35,18 @@ const localBindingConfig = {
     : [],
 };
 
-export default defineConfig(async () => {
+export default defineConfig(async ({ command, mode }) => {
+  if (mode === "production-review") {
+    const { productionReview } = await import(
+      "./scripts/preview-production.mjs"
+    );
+    return {
+      server: managedLinux
+        ? { host: "0.0.0.0", allowedHosts: ["terminal.local"] }
+        : { host: "127.0.0.1" },
+      plugins: [productionReview()],
+    };
+  }
   // Use Miniflare's local Request.cf placeholder unless fetching is requested.
   process.env.CLOUDFLARE_CF_FETCH_ENABLED ??= "false";
   process.env.WRANGLER_SEND_METRICS ??= "false";
@@ -52,8 +63,12 @@ export default defineConfig(async () => {
 
   return {
     server: {
-      ...(managedLinux ? { host: "0.0.0.0", allowedHosts: ["terminal.local"] } : {}),
-      ...(isCodexSeatbeltSandbox ? { watch: { useFsEvents: false, usePolling: true } } : {}),
+      ...(managedLinux
+        ? { host: "0.0.0.0", allowedHosts: ["terminal.local"] }
+        : {}),
+      ...(isCodexSeatbeltSandbox
+        ? { watch: { useFsEvents: false, usePolling: true } }
+        : {}),
     },
     plugins: [
       vinext(),
@@ -61,7 +76,11 @@ export default defineConfig(async () => {
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
         inspectorPort: false,
-        config: localBindingConfig,
+        config: {
+          ...localBindingConfig,
+          // Vite owns development modules; deployed assets pass through our policy.
+          assets: { binding: "ASSETS", run_worker_first: command === "build" },
+        },
       }),
     ],
   };

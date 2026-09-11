@@ -218,7 +218,7 @@ export function LiquidImage({
     if (active || override !== undefined || reduced) render.current?.(value);
   }, [active, override, progress, reduced]);
   return (
-    <div className="liquid-image" role="img" aria-label={alt}>
+    <div className="liquid-image" data-scene-focus role="img" aria-label={alt}>
       {/* The actual image also provides no-WebGL and image-decoding fallbacks. */}
       {!failed && (
         <img

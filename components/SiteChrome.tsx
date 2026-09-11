@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { chapters } from "@/data/site";
 import { profile } from "@/data/profile";
+import { subscribeScroll } from "@/lib/scroll-observer";
 
 const links = [
   { href: "/", label: "Journey" },
@@ -14,6 +15,22 @@ const links = [
 export function Header() {
   const pathname = usePathname();
   const menu = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const dismiss = (event: PointerEvent) => {
+      if (
+        menu.current?.open &&
+        event.target instanceof Node &&
+        !menu.current.contains(event.target)
+      ) {
+        menu.current.open = false;
+      }
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, []);
+  useEffect(() => {
+    if (menu.current) menu.current.open = false;
+  }, [pathname]);
   return (
     <>
       <a href="#main" className="skip-link">
@@ -38,7 +55,25 @@ export function Header() {
         <Link href="/contact" className="header-contact">
           Let’s connect <span aria-hidden="true">↗</span>
         </Link>
-        <details ref={menu} className="mobile-menu">
+        <details
+          ref={menu}
+          className="mobile-menu"
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && menu.current?.open) {
+              event.preventDefault();
+              menu.current.open = false;
+              menu.current.querySelector("summary")?.focus();
+            }
+          }}
+          onBlur={(event) => {
+            if (
+              event.relatedTarget instanceof Node &&
+              !event.currentTarget.contains(event.relatedTarget)
+            ) {
+              event.currentTarget.open = false;
+            }
+          }}
+        >
           <summary>
             Menu <span>+</span>
           </summary>
@@ -75,11 +110,11 @@ export function JourneyRail() {
           return el && el.getBoundingClientRect().top < innerHeight * 0.5;
         })
         .at(-1);
-      if (chosen) setCurrent(chosen.id);
+      setCurrent(chosen?.id ?? "init");
     };
-    window.addEventListener("scroll", update, { passive: true });
+    const unsubscribe = subscribeScroll(update);
     update();
-    return () => window.removeEventListener("scroll", update);
+    return unsubscribe;
   }, []);
   return (
     <nav className="journey-rail" aria-label="Journey chapters">
